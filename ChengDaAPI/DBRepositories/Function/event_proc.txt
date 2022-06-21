@@ -1,0 +1,101 @@
+﻿CREATE OR REPLACE FUNCTION "cdp"."event_proc"()
+  RETURNS "cdp"."proc_result" AS $BODY$
+	DECLARE 
+		is_success BOOLEAN :=false;
+		proc_cnt INTEGER := 0; 	
+		fail_cnt INTEGER := 0;	
+		tableName VARCHAR;
+		insert_cnt INTEGER := 0;
+		filter_cond VARCHAR;
+		event_record record; 
+		condition_record record;
+	BEGIN				
+		-- 取出需要被執行客群名單
+		FOR event_record IN 
+		SELECT * FROM cdp.event e WHERE e.start_date_time <= current_date AND e.end_date_time >= current_date AND e.status = 'A'
+		LOOP				
+			raise notice '執行客群名單 PK: % , % ', event_record.event_pk,event_record.event_name;
+			-- 客群名單下標籤
+			FOR condition_record IN SELECT string_agg(tag_pk::varchar, ',') tags, count(*) cnt,operator_type FROM cdp.event_condition WHERE event_pk = event_record.event_pk GROUP BY event_pk,operator_type
+			LOOP				
+				tableName = 'event_'||event_record.event_pk;
+				raise notice 'tags : %  cnt : % operator : %', condition_record.tags,condition_record.cnt,condition_record.operator_type;
+				raise notice 'export table name %', event_record.event_name;
+				raise notice 'CREATE TABLE "cdp_export".% ', tableName;				
+				
+ 				-- 建立匯出紀錄表
+				execute format('create table cdp_export.%s (
+				 member_id text collate pg_catalog.default not null PRIMARY KEY,
+				 parent_name text collate pg_catalog.default,
+				 cell_phone text collate pg_catalog.default,
+				 member_name text collate pg_catalog.default,
+				 birth_ym text collate pg_catalog.default,
+				 subscript_status text collate pg_catalog.default,
+				 subscribed_product text[] collate pg_catalog.default,
+				 school_year int4,
+				 member_of_household int4
+			 )', tableName);
+	
+				-- 判斷是否需要過濾名單
+				IF(event_record.is_filter = '1') THEN
+					raise notice '需要過濾名單';
+					SELECT string_agg(' except select member_id from ' || concat('cdp_export_',TO_CHAR(export_time, 'YYYYMMDD'),'.',export_table_name), '')  cond
+					INTO filter_cond
+					FROM cdp.event_export_record WHERE export_time <= CURRENT_DATE
+					GROUP BY  event_pk HAVING event_pk = event_record.event_pk ;
+					raise notice '過濾SQL COMMAND: %', filter_cond;
+				ELSE
+				  raise notice '不需要過濾名單';
+					filter_cond = '';
+				END IF;
+				
+				-- 判斷運算元				
+				IF condition_record.operator_type = '1' THEN
+					raise notice 'OPERATOR => AND';          
+					EXECUTE format('
+						INSERT INTO cdp_export.%s
+						SELECT * FROM cdp.member WHERE member_id in
+						(
+							SELECT member_id FROM 
+							(
+								SELECT member_id,tag_id FROM cdp.member_link_tag WHERE tag_id in (%s)
+								UNION
+								SELECT member_id,tag_id FROM cdp.order o JOIN cdp.order_link_tag ot ON (ot.order_id = o.order_id) WHERE tag_id IN (%s)
+							) bo GROUP BY member_id HAVING count(*) = %s
+							%s 
+							LIMIT %s
+						)',tableName,condition_record.tags,condition_record.tags,condition_record.cnt::INT,filter_cond,event_record.limit_count::INT);
+						
+				ELSE
+					raise notice 'OPERATOR => OR';   					
+					EXECUTE format('
+						INSERT INTO cdp_export.%s
+						SELECT * FROM "member" WHERE member_id in
+						(
+							SELECT DISTINCT member_id FROM 
+							(
+								SELECT member_id,tag_id FROM member_link_tag WHERE tag_id in (%s)
+								UNION
+								SELECT member_id,tag_id FROM cdp."order" o JOIN cdp.order_link_tag ot ON (ot.order_id = o.order_id) WHERE tag_id IN (%s)
+							) bo
+							%s 
+							LIMIT %s
+						)',tableName,condition_record.tags,condition_record.tags,filter_cond,event_record.limit_count::INT);										
+				END IF;
+				
+				-- 新增匯出紀錄
+				insert_cnt = 0;
+				EXECUTE format('SELECT count(*) FROM cdp_export.%s',tableName) INTO insert_cnt;
+				INSERT INTO event_export_record VALUES (nextval('event_export_record_seq'),event_record.event_pk,tableName,CURRENT_TIMESTAMP,1,insert_cnt);
+				
+			END LOOP;
+
+ 		END LOOP;
+		
+									
+		
+		RETURN (is_success, proc_cnt, fail_cnt);
+	END;
+	$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100

@@ -1,0 +1,102 @@
+﻿CREATE OR REPLACE FUNCTION "cdp"."condition_proc"("proc_type" text)
+  RETURNS "cdp"."proc_result" AS $BODY$
+	DECLARE 
+		is_success BOOLEAN :=false;
+		proc_cnt INTEGER := 0; 	
+		fail_cnt INTEGER := 0;	
+		
+		tag_record record;  -- tag
+		fetch_record record; -- id & tag
+	BEGIN				
+
+		FOR tag_record IN 
+		SELECT string_agg("cond", ' AND ') cond,tag_name,tag_pk
+			FROM
+				(
+				SELECT  t.tag_pk,t.tag_name,t.description,cs."column_name",tc.operator_type,tc."value",
+				CASE
+						WHEN (tc.operator_type = '1' ) THEN concat(cs."column_name",' > ',('''' || tc."value" || ''''))
+						WHEN (tc.operator_type = '2' ) THEN concat(cs."column_name",' >= ',('''' || tc."value" || ''''))
+						WHEN (tc.operator_type = '3' ) THEN concat(cs."column_name",' < ',('''' || tc."value" || ''''))
+						WHEN (tc.operator_type = '4' ) THEN concat(cs."column_name",' <= ',('''' || tc."value" || ''''))
+						WHEN (tc.operator_type = '5' ) THEN concat(cs."column_name",' = ',('''' || tc."value" || ''''))
+						WHEN (tc.operator_type = '6' ) THEN concat(cs."column_name",' != ',('''' || tc."value" || ''''))
+						WHEN (tc.operator_type = '7' ) THEN concat(cs."column_name",' BETWEEN ',split_part(('''' || tc."value" || ''''), ';', 1), ' AND ',split_part(('''' || tc."value" || ''''), ';', 2))
+						WHEN (tc.operator_type = '8' ) THEN concat(cs."column_name",' like ', ('''' || '%' || tc."value" || '%' || ''''))
+						WHEN (tc.operator_type = '9' ) THEN concat(cs."column_name",' in (',tc."value",')')
+						WHEN (tc.operator_type = '10' ) THEN concat(cs."column_name",' ilike ', ('''' || '%' || tc."value" || '%' || ''''))
+						WHEN (tc.operator_type = '11' ) THEN concat(cs."column_name",' not in (',tc."value",')')
+						ELSE '00'
+				END AS cond
+				FROM cdp.tag_condition tc
+				JOIN cdp.tag t ON (t.tag_pk = tc.t_pk AND t.category = proc_type AND t.start_date_time <= current_date AND t.end_date_time >= current_date AND t.status = 'A' AND t.type = '1')
+				JOIN cdp.column_setting cs ON (cs.cs_pk = tc.cs_pk AND cs.status = 'A')
+				ORDER BY t.tag_name
+				) t GROUP BY tag_pk,tag_name	
+		LOOP							
+			raise notice '執行標籤PK/名稱/條件: % / % / %', tag_record.tag_pk ,tag_record.tag_name ,tag_record.cond;
+			IF proc_type = 'M' THEN
+				raise notice '會員資料  %', 'SELECT * FROM cdp."member" WHERE ' || tag_record.cond;
+				FOR fetch_record IN EXECUTE 'SELECT * FROM cdp."member" WHERE ' || tag_record.cond 
+				LOOP
+					BEGIN
+							raise notice 'FETCH MEMBER ID % ', fetch_record."member_id";
+							
+							INSERT INTO member_link_tag VALUES (fetch_record."member_id",tag_record.tag_pk);
+							proc_cnt := proc_cnt +1;
+							
+							EXCEPTION
+								WHEN OTHERS THEN
+									fail_cnt := fail_cnt+1;
+									raise notice 'Error occurs when insert member_link_tag( % )', now();
+									raise notice 'Error message: % / % ', SQLSTATE, SQLERRM;	
+					END; 	
+			  END LOOP;
+			ELSE
+				raise notice '訂單資料';
+				FOR fetch_record IN EXECUTE 'SELECT * FROM cdp."order" WHERE ' || tag_record.cond 
+				LOOP
+					BEGIN
+							raise notice 'FETCH ORDER ID %', fetch_record."order_id";
+							
+							INSERT INTO order_link_tag VALUES (fetch_record."order_id",tag_record.tag_pk);
+							proc_cnt := proc_cnt +1;
+							
+							EXCEPTION
+								WHEN OTHERS THEN
+									fail_cnt := fail_cnt+1;
+									raise notice 'Error occurs when insert order_link_tag( % )', now();
+									raise notice 'Error message: % / % ', SQLSTATE, SQLERRM;	
+					END;	
+			  END LOOP;				
+			END IF;
+		
+ 		END LOOP;
+		
+		IF fail_cnt = 0 THEN
+			-- 所有insert 執行皆為成功
+			is_success :=true;
+			RETURN (is_success, proc_cnt, fail_cnt);
+		ELSE
+			-- 其中有失敗的案例
+			is_success :=false;
+			RETURN (is_success, proc_cnt, fail_cnt);
+		END IF;
+		
+		EXCEPTION
+			WHEN NO_DATA_FOUND THEN
+				is_success :=true;
+				IF proc_type = 'M' THEN
+					raise notice '查無可執行的會員條件標籤資料';
+				ELSE
+					raise notice '查無可執行的訂單條件標籤資料';
+				END IF;
+			WHEN OTHERS THEN
+				raise notice 'Error occurs when select tag_record( % )', now();
+				raise notice 'Error message: % / % ', SQLSTATE, SQLERRM;											
+		
+		RETURN (is_success, proc_cnt, fail_cnt);
+	END;
+	$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100

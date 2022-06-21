@@ -1,0 +1,57 @@
+﻿CREATE OR REPLACE FUNCTION "cdp"."member_list_tag_proc"()
+  RETURNS "cdp"."proc_result" AS $BODY$
+		DECLARE
+			query_result record;
+			is_success BOOLEAN := false; 
+			proc_cnt INTEGER := 0;
+			fail_cnt INTEGER := 0;
+		BEGIN
+				FOR query_result IN 
+					SELECT tag_pk, member_id
+					FROM (
+						SELECT tg.tag_pk, mum.member_id
+							FROM cdp.tag tg
+							join cdp.manual_upload_member mum on tg.tag_pk = mum.tag_pk
+							WHERE 
+								tg.start_date_time <= current_date
+								and tg.end_date_time >= current_date
+								and tg.status = 'A' 
+								and tg.type = '2' -- 名單標籤
+								and tg.category = 'M'  -- 會員
+					) a GROUP BY tag_pk, member_id ORDER BY tag_pk ASC, member_id ASC
+				LOOP
+						BEGIN
+							raise notice '執行會員名單標籤PK/對應的會員PK: % / % ', query_result.tag_pk ,query_result.member_id;
+							INSERT INTO cdp.member_link_tag (member_id, tag_id) VALUES (query_result.member_id, query_result.tag_pk);
+							proc_cnt := proc_cnt +1;
+							
+							EXCEPTION
+								WHEN OTHERS THEN
+									fail_cnt := fail_cnt+1;
+									raise notice 'Error occurs when insert member_link_tag( % )', now();
+									raise notice 'Error message: % / % ', SQLSTATE, SQLERRM;
+						END; 	
+				END loop;	
+				IF fail_cnt = 0 THEN
+					-- 所有insert 執行皆為成功
+					is_success :=true;
+					RETURN (is_success, proc_cnt, fail_cnt);
+				ELSE
+					-- 其中有失敗的案例
+					is_success :=false;
+					RETURN (is_success, proc_cnt, fail_cnt);
+				END IF;
+		
+				EXCEPTION
+					WHEN NO_DATA_FOUND THEN
+						is_success :=true;
+						raise notice '查無可執行的會員名單標籤資料';
+					WHEN OTHERS THEN
+						raise notice 'Error occurs when select member and tag( % )', now();
+						raise notice 'Error message: % / % ', SQLSTATE, SQLERRM;
+				RETURN (is_success, proc_cnt, fail_cnt);			
+		END;
+	
+	$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100

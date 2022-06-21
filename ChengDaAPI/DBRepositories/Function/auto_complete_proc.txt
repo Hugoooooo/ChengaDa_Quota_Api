@@ -1,0 +1,19 @@
+﻿CREATE OR REPLACE FUNCTION "cdp"."auto_complete_proc"("keyword" text, "pk" int4)
+  RETURNS TABLE("txt" text) AS $BODY$
+	DECLARE  
+		tableName VARCHAR;
+		columnName VARCHAR;
+	BEGIN	
+		SELECT "table_name","column_name" INTO tableName,columnName FROM cdp.column_setting WHERE cs_pk = pk::INT;		
+		raise notice '% %',tableName,columnName;
+		IF keyword = '' THEN
+			RETURN QUERY EXECUTE format('SELECT DISTINCT %s FROM cdp.%s LIMIT 10',columnName,tableName);	
+		ELSE
+			RETURN QUERY EXECUTE format('SELECT DISTINCT %s FROM cdp.%s WHERE %s LIKE ''%s'' LIMIT 10',columnName,tableName,columnName, '%' || keyword || '%');	
+		END IF;
+			
+		END;
+	$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000

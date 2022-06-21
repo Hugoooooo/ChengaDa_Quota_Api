@@ -1,0 +1,58 @@
+﻿CREATE OR REPLACE FUNCTION "cdp"."order_list_tag_proc"()
+  RETURNS "cdp"."proc_result" AS $BODY$
+		DECLARE
+			query_result record;
+			is_success BOOLEAN := false; 
+			proc_cnt INTEGER := 0;
+			fail_cnt INTEGER := 0;
+		BEGIN
+				FOR query_result IN 
+					SELECT tag_pk, order_id
+					FROM (
+						SELECT tg.tag_pk, mum.order_id
+							FROM cdp.tag tg
+							join cdp.manual_upload_order mum on tg.tag_pk = mum.tag_pk
+							WHERE 
+								tg.start_date_time <= current_date
+								and tg.end_date_time >= current_date
+								and tg.status = 'A' 
+								and tg.type = '2' -- 名單標籤
+								and tg.category = 'O'  -- 訂單
+					) a GROUP BY tag_pk, order_id ORDER BY tag_pk ASC, order_id ASC
+				LOOP
+						BEGIN
+							raise notice '執行訂單名單標籤PK/對應的訂單PK: % / % ', query_result.tag_pk ,query_result.order_id;
+							INSERT INTO cdp.order_link_tag (order_id, tag_id) VALUES (query_result.order_id, query_result.tag_pk);
+							proc_cnt := proc_cnt +1;
+							
+							EXCEPTION
+								WHEN OTHERS THEN
+									fail_cnt := fail_cnt+1;
+									raise notice 'Error occurs when insert order_link_tag( % )', now();
+									raise notice 'Error message: % / % ', SQLSTATE, SQLERRM;
+						END; 	
+				END loop;	
+				IF fail_cnt = 0 THEN
+					-- 所有insert 執行皆為成功
+					is_success :=true;
+					RETURN (is_success, proc_cnt, fail_cnt);
+				ELSE
+					-- 其中有失敗的案例
+					is_success :=false;
+					RETURN (is_success, proc_cnt, fail_cnt);
+				END IF;
+				
+				EXCEPTION
+					WHEN NO_DATA_FOUND THEN
+						is_success :=true;
+						raise notice '查無可執行的訂單名單標籤資料';
+					WHEN OTHERS THEN
+						raise notice 'Error occurs when select order and tag( % )', now();
+						raise notice 'Error message: % / % ', SQLSTATE, SQLERRM;
+								
+				RETURN (is_success, proc_cnt, fail_cnt);
+		END;
+	
+	$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100

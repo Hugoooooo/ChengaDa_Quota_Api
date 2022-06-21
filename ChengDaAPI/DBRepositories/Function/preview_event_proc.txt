@@ -1,0 +1,39 @@
+﻿CREATE OR REPLACE FUNCTION "cdp"."preview_event_proc"("tag_ids" text, "tag_cnt" int4, "operator_type" text)
+  RETURNS SETOF "cdp"."member" AS $BODY$
+BEGIN
+
+raise notice '% % %',tag_ids,tag_cnt,operator_type;
+-- -- 判斷運算元
+IF operator_type = '1' THEN
+raise notice 'OPERATOR => AND';          
+RETURN QUERY EXECUTE format('
+SELECT * FROM cdp.member WHERE member_id in
+(
+SELECT member_id FROM 
+(
+SELECT member_id,tag_id FROM cdp.member_link_tag WHERE tag_id in (%s)
+UNION
+SELECT member_id,tag_id FROM cdp.order o JOIN cdp.order_link_tag ot ON (ot.order_id = o.order_id) WHERE tag_id IN (%s)
+) bo GROUP BY member_id HAVING count(*) = %s
+)',tag_ids,tag_ids,tag_cnt);
+
+ELSE
+raise notice 'OPERATOR => OR';   
+RETURN QUERY EXECUTE format('
+SELECT * FROM "member" WHERE member_id in
+(
+SELECT DISTINCT member_id FROM 
+(
+SELECT member_id,tag_id FROM member_link_tag WHERE tag_id in (%s)
+UNION
+SELECT member_id,tag_id FROM cdp."order" o JOIN cdp.order_link_tag ot ON (ot.order_id = o.order_id) WHERE tag_id IN (%s)
+) bo
+)',tag_ids,tag_ids);
+END IF;
+
+
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000

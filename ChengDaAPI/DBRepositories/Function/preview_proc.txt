@@ -1,0 +1,64 @@
+﻿CREATE OR REPLACE FUNCTION "cdp"."preview_proc"("tagpk" int4)
+  RETURNS SETOF "cdp"."member" AS $BODY$
+DECLARE 
+tagType VARCHAR;
+tagCategory VARCHAR;
+tag_record record;  -- tag
+fetch_record record; -- id & tag
+BEGIN
+SELECT "type",category into tagType,tagCategory FROM cdp.tag WHERE tag_pk = tagpk;
+raise notice 'OHHH % / %', tagType,tagCategory;
+IF tagType = '1' THEN
+raise notice '[ 條件標籤 ]';
+FOR tag_record IN 
+SELECT string_agg("cond", ' AND ') cond,tag_name,tag_pk,category
+FROM
+(
+SELECT  t.tag_pk,t.tag_name,t.description,cs."column_name",tc.operator_type,tc."value",t.category,
+CASE
+WHEN (tc.operator_type = '1' ) THEN concat(t.category,'.',cs."column_name",' > ',('''' || tc."value" || ''''))
+WHEN (tc.operator_type = '2' ) THEN concat(t.category,'.',cs."column_name",' >= ',('''' || tc."value" || ''''))
+WHEN (tc.operator_type = '3' ) THEN concat(t.category,'.',cs."column_name",' < ',('''' || tc."value" || ''''))
+WHEN (tc.operator_type = '4' ) THEN concat(t.category,'.',cs."column_name",' <= ',('''' || tc."value" || ''''))
+WHEN (tc.operator_type = '5' ) THEN concat(t.category,'.',cs."column_name",' = ',('''' || tc."value" || ''''))
+WHEN (tc.operator_type = '6' ) THEN concat(t.category,'.',cs."column_name",' != ',('''' || tc."value" || ''''))
+WHEN (tc.operator_type = '7' ) THEN concat(t.category,'.',cs."column_name",' BETWEEN ',split_part(('''' || tc."value" || ''''), ';', 1), ' AND ',split_part(('''' || tc."value" || ''''), ';', 2))
+WHEN (tc.operator_type = '8' ) THEN concat(t.category,'.',cs."column_name",' like ', ('''' || '%' || tc."value" || '%' || ''''))
+WHEN (tc.operator_type = '9' ) THEN concat(t.category,'.',cs."column_name",' in (', tc."value" ,')')
+WHEN (tc.operator_type = '10' ) THEN concat(t.category,'.',cs."column_name",' ilike ', ('''' || '%' || tc."value" || '%' || ''''))
+WHEN (tc.operator_type = '11' ) THEN concat(t.category,'.',cs."column_name",' not in (',tc."value",')')
+ELSE '00'
+END AS cond
+FROM cdp.tag_condition tc
+JOIN cdp.tag t ON (t.tag_pk = tc.t_pk AND t.tag_pk = tagpk)
+JOIN cdp.column_setting cs ON (cs.cs_pk = tc.cs_pk AND cs.status = 'A')
+ORDER BY t.tag_name
+) t GROUP BY tag_pk,tag_name,category
+LOOP 
+raise notice '執行標籤PK/名稱 % / %', tag_record.tag_pk ,tag_record.tag_name;
+IF tag_record.category = 'M' THEN
+raise notice '會員資料  %', 'SELECT * FROM cdp."member" M WHERE 1=1 AND ' || tag_record.cond;
+RETURN QUERY EXECUTE 'SELECT * FROM cdp."member" M WHERE 1=1 AND ' || tag_record.cond || ' ORDER BY M.member_id';
+ELSE
+raise notice '訂單資料 %', concat('SELECT M.* FROM cdp.order O JOIN cdp.member M ON (O.member_id = M.member_id AND ',tag_record.cond ,' )');
+RETURN QUERY EXECUTE concat('SELECT M.* FROM cdp.order O JOIN cdp.member M ON (O.member_id = M.member_id AND ',tag_record.cond ,' )', ' ORDER BY M.member_id');
+  END IF;
+   END LOOP;
+ELSE
+  raise notice '[ 名單標籤 ]';
+IF tagCategory = 'M' THEN
+raise notice '會員資料 %',  concat('SELECT m.* FROM cdp.manual_upload_member  mum JOIN cdp."member" m on (mum.member_id = m.member_id AND mum.tag_pk =',tagpk ,' )');
+RETURN QUERY EXECUTE concat('SELECT m.* FROM cdp.manual_upload_member  mum JOIN cdp."member" m on (mum.member_id = m.member_id AND mum.tag_pk =',tagpk ,' )',' ORDER BY m.member_id');
+ELSE
+raise notice '訂單資料 %',  concat('SELECT DISTINCT m.* FROM cdp.manual_upload_order mu JOIN cdp."order" o ON (mu.order_id = o.order_id AND mu.tag_pk = ',tagpk ,' ) JOIN cdp."member" m ON m.member_id  = o.member_id');
+RETURN QUERY EXECUTE concat('SELECT DISTINCT m.* FROM cdp.manual_upload_order mu JOIN cdp."order" o ON (mu.order_id = o.order_id AND mu.tag_pk = ',tagpk ,' ) JOIN cdp."member" m ON m.member_id  = o.member_id', ' ORDER BY m.member_id');
+END IF;
+
+END IF;
+
+
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000

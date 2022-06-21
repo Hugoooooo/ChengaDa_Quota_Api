@@ -1,0 +1,52 @@
+﻿CREATE OR REPLACE FUNCTION "cdp"."export_event_proc"("eventpk" int4)
+  RETURNS SETOF "cdp"."member" AS $BODY$
+DECLARE 
+event_record record; 
+condition_record record;
+BEGIN
+raise notice 'eventPk : %',eventpk;
+FOR event_record IN 
+SELECT * FROM cdp.event  WHERE event_pk = eventpk
+LOOP
+raise notice '執行客群名單 PK: % , % ', event_record.event_pk,event_record.event_name;
+-- 客群名單下標籤
+FOR condition_record IN SELECT string_agg(tag_pk::varchar, ',') tags, count(*) cnt,operator_type FROM cdp.event_condition WHERE event_pk = eventpk GROUP BY event_pk,operator_type
+LOOP
+raise notice 'tags : %  cnt : % operator : %', condition_record.tags,condition_record.cnt,condition_record.operator_type;
+
+-- 判斷運算元
+IF condition_record.operator_type = '1' THEN
+raise notice 'OPERATOR => AND';          
+RETURN QUERY EXECUTE format('
+SELECT * FROM cdp.member WHERE member_id in
+(
+SELECT member_id FROM 
+(
+SELECT member_id,tag_id FROM cdp.member_link_tag WHERE tag_id in (%s)
+UNION
+SELECT member_id,tag_id FROM cdp.order o JOIN cdp.order_link_tag ot ON (ot.order_id = o.order_id) WHERE tag_id IN (%s)
+) bo GROUP BY member_id HAVING count(*) = %s
+)',condition_record.tags,condition_record.tags,condition_record.cnt::INT);
+
+ELSE
+raise notice 'OPERATOR => OR';   
+EXECUTE format('
+SELECT * FROM "member" WHERE member_id in
+(
+SELECT DISTINCT member_id FROM 
+(
+SELECT member_id,tag_id FROM member_link_tag WHERE tag_id in (%s)
+UNION
+SELECT member_id,tag_id FROM cdp."order" o JOIN cdp.order_link_tag ot ON (ot.order_id = o.order_id) WHERE tag_id IN (%s)
+) bo
+)',condition_record.tags,condition_record.tags);
+END IF;
+END LOOP;
+
+ END LOOP;
+
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100
+  ROWS 1000
