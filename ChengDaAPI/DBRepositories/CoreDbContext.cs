@@ -16,10 +16,14 @@ namespace ChengDaApi.DBRepositories
                 .HasKey(item => new { item.id });
             modelBuilder.Entity<QuoteDetail>()
                 .HasKey(item => new { item.id });
+            modelBuilder.Entity<SystemParameter>()
+                .HasKey(item => new { item.id });
         }
 
         public virtual DbSet<Quote> Quote { set; get; }
         public virtual DbSet<QuoteDetail> QuoteDetail { set; get; }
+        public virtual DbSet<SystemParameter> SystemParameter { set; get; }
+
 
 
 

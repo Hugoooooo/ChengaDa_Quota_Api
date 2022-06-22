@@ -30,12 +30,12 @@ namespace ChengDaApi.Controllers
         private readonly IDapperr _dapper;
         private readonly IQuoteRepository _quoteRepository;
         private readonly IQuoteDetailRepository _quoteDetailRepository;
-
+        private readonly ISystemParameterRepository _systemParameterRepository;
 
 
 
         public QuoteController(ILogger<QuoteController> logger, IConverter pdfConverter, IConfiguration configuration, IDapperr dapper, IDatabase database,
-            IQuoteRepository quoteRepository, IQuoteDetailRepository quoteDetailRepository)
+            IQuoteRepository quoteRepository, IQuoteDetailRepository quoteDetailRepository,ISystemParameterRepository systemParameterRepository)
         {
             _database = database;
             _logger = logger;
@@ -44,6 +44,7 @@ namespace ChengDaApi.Controllers
             _pdfConverter = pdfConverter;
             _quoteRepository = quoteRepository;
             _quoteDetailRepository = quoteDetailRepository;
+            _systemParameterRepository = systemParameterRepository;
         }
 
         [HttpGet]
@@ -678,6 +679,34 @@ namespace ChengDaApi.Controllers
             }
 
             return null;
+        }
+
+        [HttpGet]
+        [Route("GetParameter")]
+        public async Task<GetParametersRes> GetParameter()
+        {
+            GetParametersRes res = new GetParametersRes()
+            {
+                message = GenericResType.QUERY_SUCCESS
+            };
+            try
+            {
+                var datas = await _systemParameterRepository.GetAll();
+                if (datas != null)
+                {
+                    res.datas = datas.Select(x => x.name).ToList();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(GenericResType.QUERY_FAIL + " ex:" + ex.ToString());
+
+                res.isError = true;
+                res.message = GenericResType.QUERY_FAIL;
+            }
+
+            return res;
         }
     }
 }
