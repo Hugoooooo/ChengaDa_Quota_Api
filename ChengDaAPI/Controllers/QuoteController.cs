@@ -150,8 +150,39 @@ namespace ChengDaApi.Controllers
                 taxAmount = (int)Math.Round(totalAmount * 0.05, 0, MidpointRounding.AwayFromZero);
                 #endregion
 
+                int afterTaxTotal = 0;
+                string totalTemplate = "";
                 // 1: 外加  2: 內含
-                int afterTaxTotal = req.fax_type == "1" ? (totalAmount + taxAmount) : totalAmount;
+                if (req.fax_type == "1" || req.fax_type == "2")
+                {
+                    afterTaxTotal = req.fax_type == "1" ? (totalAmount + taxAmount) : totalAmount;
+                    totalTemplate = $@"
+                        <p style='margin: 0.5em 0;'>
+                            <span style='width: 2em; display: inline-block; text-align-last: justify;'>NT$</span>：
+                            <span style='width: 7em; display: inline-block; text-align: right;'>{totalAmount.ToString("#,0")}</span> 元
+                        </p>
+                        <p style='margin: 0.5em 0;'>
+                            <span style='width: 2em; display: inline-block; text-align-last: justify;'>稅額</span>：
+                            <span style='width: 7em; display: inline-block; border-bottom: 1px solid; text-align: right;'>{taxAmount.ToString("#,0")}</span> 元
+                        </p>
+                        <p style='margin: 0.5em 0;'>
+                            <span>總價新台幣： </span>
+                            <span style='width: 2em; display: inline-block; text-align-last: justify;'>NT$</span>：
+                            <span style='width: 7em; display: inline-block; border-bottom: 1px solid; text-align: right;'>{afterTaxTotal.ToString("#,0")}</span> 元
+                        </p>
+                        ";
+                }
+                else
+                {
+                    totalTemplate = $@"
+                        <p style='margin: 0.5em 0;'>
+                            <span>總價新台幣： </span>
+                            <span style='width: 2em; display: inline-block; text-align-last: justify;'>NT$</span>：
+                            <span style='width: 7em; display: inline-block; border-bottom: 1px solid; text-align: right;'>{totalAmount.ToString("#,0")}</span> 元
+                        </p>
+                        ";
+                }
+
                 string template = $@"
 <body style='box-sizing: border-box; font-family:微軟正黑體; margin: 0; font-size: 12px; padding: 0 45px;'>
     <section style='box-sizing: border-box; width: 100%; padding: 20px 20px;'>
@@ -239,19 +270,7 @@ namespace ChengDaApi.Controllers
             <tfoot>
                 <tr>
                     <td colspan='7' style='padding: 0.5em 15%; border: 1px solid; text-align: right;'>
-                        <p style='margin: 0.5em 0;'>
-                            <span style='width: 2em; display: inline-block; text-align-last: justify;'>NT$</span>：
-                            <span style='width: 7em; display: inline-block; text-align: right;'>{totalAmount.ToString("#,0")}</span> 元
-                        </p>
-                        <p style='margin: 0.5em 0;'>
-                            <span style='width: 2em; display: inline-block; text-align-last: justify;'>稅額</span>：
-                            <span style='width: 7em; display: inline-block; border-bottom: 1px solid; text-align: right;'>{taxAmount.ToString("#,0")}</span> 元
-                        </p>
-                        <p style='margin: 0.5em 0;'>
-                            <span>總價新台幣： </span>
-                            <span style='width: 2em; display: inline-block; text-align-last: justify;'>NT$</span>：
-                            <span style='width: 7em; display: inline-block; border-bottom: 1px solid; text-align: right;'>{afterTaxTotal.ToString("#,0")}</span> 元
-                        </p>
+                        {totalTemplate}
                     </td>
                 </tr>
                 <tr>
@@ -455,8 +474,39 @@ namespace ChengDaApi.Controllers
                 taxAmount = (int)Math.Round(totalAmount * 0.05, 0, MidpointRounding.AwayFromZero);
                 #endregion
 
+                int afterTaxTotal = 0;
+                string totalTemplate = "";
+                // 1: 外加  2: 內含
+                if (req.fax_type == "1" || req.fax_type == "2")
+                {
+                    afterTaxTotal = req.fax_type == "1" ? (totalAmount + taxAmount) : totalAmount;
+                    totalTemplate = $@"
+                        <p style='margin: 0.5em 0;'>
+                            <span style='width: 2em; display: inline-block; text-align-last: justify;'>NT$</span>：
+                            <span style='width: 7em; display: inline-block; text-align: right;'>{totalAmount.ToString("#,0")}</span> 元
+                        </p>
+                        <p style='margin: 0.5em 0;'>
+                            <span style='width: 2em; display: inline-block; text-align-last: justify;'>稅額</span>：
+                            <span style='width: 7em; display: inline-block; border-bottom: 1px solid; text-align: right;'>{taxAmount.ToString("#,0")}</span> 元
+                        </p>
+                        <p style='margin: 0.5em 0;'>
+                            <span>總價新台幣： </span>
+                            <span style='width: 2em; display: inline-block; text-align-last: justify;'>NT$</span>：
+                            <span style='width: 7em; display: inline-block; border-bottom: 1px solid; text-align: right;'>{afterTaxTotal.ToString("#,0")}</span> 元
+                        </p>
+                        ";
+                }
+                else
+                {
+                    totalTemplate = $@"
+                        <p style='margin: 0.5em 0;'>
+                            <span>總價新台幣： </span>
+                            <span style='width: 2em; display: inline-block; text-align-last: justify;'>NT$</span>：
+                            <span style='width: 7em; display: inline-block; border-bottom: 1px solid; text-align: right;'>{totalAmount.ToString("#,0")}</span> 元
+                        </p>
+                        ";
+                }
 
-                int afterTaxTotal = req.fax_type == "1" ? (totalAmount + taxAmount) : totalAmount;
                 string template = $@"
 <body style='box-sizing: border-box; font-family:微軟正黑體; margin: 0; font-size: 12px; padding: 0 45px;'>
     <section style='box-sizing: border-box; width: 100%; padding: 20px 20px;'>
@@ -544,19 +594,7 @@ namespace ChengDaApi.Controllers
             <tfoot>
                 <tr>
                     <td colspan='7' style='padding: 0.5em 15%; border: 1px solid; text-align: right;'>
-                        <p style='margin: 0.5em 0;'>
-                            <span style='width: 2em; display: inline-block; text-align-last: justify;'>NT$</span>：
-                            <span style='width: 7em; display: inline-block; text-align: right;'>{totalAmount.ToString("#,0")}</span> 元
-                        </p>
-                        <p style='margin: 0.5em 0;'>
-                            <span style='width: 2em; display: inline-block; text-align-last: justify;'>稅額</span>：
-                            <span style='width: 7em; display: inline-block; border-bottom: 1px solid; text-align: right;'>{taxAmount.ToString("#,0")}</span> 元
-                        </p>
-                        <p style='margin: 0.5em 0;'>
-                            <span>總價新台幣： </span>
-                            <span style='width: 2em; display: inline-block; text-align-last: justify;'>NT$</span>：
-                            <span style='width: 7em; display: inline-block; border-bottom: 1px solid; text-align: right;'>{afterTaxTotal.ToString("#,0")}</span> 元
-                        </p>
+                       {totalTemplate}
                     </td>
                 </tr>
                 <tr>
