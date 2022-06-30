@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -19,4 +20,8 @@ namespace Domain.Models.Quote
         public List<QuoteModel> items { get; set; }
     }
 
+    public class TransformCSVReq
+    {
+        public IFormFile file { get; set; }
+    }
 }

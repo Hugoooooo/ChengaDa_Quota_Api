@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using ChengDaApi.Controllers.Job;
 using ChengDaApi.DBRepositories.DBSchema;
@@ -12,6 +13,7 @@ using DinkToPdf.Contracts;
 using Domain;
 using Domain.Models;
 using Domain.Models.Quote;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -111,16 +113,6 @@ namespace ChengDaApi.Controllers
                 int taxAmount = 0;  //稅額
                 int rows = 20;
                 string rowAssemble = string.Empty;
-                string rowTempate = $@"
-                <tr>
-                    <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>一</td>
-                    <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em;'>變頻多赛上吹式室外主機保養</td>
-                    <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>台</td>
-                    <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>16</td>
-                    <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>3,000</td>
-                    <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>48,000</td>
-                    <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; word-break: break-all;'>testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest</td>
-                </tr>";
 
                 for (int i = 1; i <= rows; i++)
                 {
@@ -132,9 +124,9 @@ namespace ChengDaApi.Controllers
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{i}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em;'>{tmp.product}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{tmp.pattern}</td>
-                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{(tmp.quantity <= 0 ? "" : tmp.quantity.ToString("#,0"))}</td>
-                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>{(tmp.unit_price <= 0 ? "" : tmp.unit_price.ToString("#,0"))}</td>
-                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>{(tmp.amount <= 0 ? "" : tmp.amount.ToString("#,0"))}</td>
+                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{(tmp.quantity == 0 ? "" : tmp.quantity.ToString("#,0"))}</td>
+                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>{(tmp.unit_price == 0 ? "" : tmp.unit_price.ToString("#,0"))}</td>
+                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>{(tmp.amount == 0 ? "" : tmp.amount.ToString("#,0"))}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; word-break: break-all;'>{tmp.remark}</td>
                         </tr>";
                         totalAmount += tmp.amount;
@@ -159,7 +151,7 @@ namespace ChengDaApi.Controllers
                 #endregion
 
                 // 1: 外加  2: 內含
-                int afterTaxTotal = req.fax_type == "1" ? (totalAmount + taxAmount) : (totalAmount - taxAmount);
+                int afterTaxTotal = req.fax_type == "1" ? (totalAmount + taxAmount) : totalAmount;
                 string template = $@"
 <body style='box-sizing: border-box; font-family:微軟正黑體; margin: 0; font-size: 12px; padding: 0 45px;'>
     <section style='box-sizing: border-box; width: 100%; padding: 20px 20px;'>
@@ -294,7 +286,7 @@ namespace ChengDaApi.Controllers
                 </p>
                 <p style='margin: 0;'>
                     <span style='width: 4em; display: inline-block; text-align-last: justify;'>公司電話</span>：
-                    <span>(02)2689-9351 / (02)2676-3799/span>
+                    <span>(02)2689-9351 / (02)2676-3799</span>
                 </p>
                 <p style='margin: 0;'>
                     <span style='width: 4em; display: inline-block; text-align-last: justify;'>公司傳真</span>：
@@ -425,16 +417,7 @@ namespace ChengDaApi.Controllers
                 int taxAmount = 0;  //稅額
                 int rows = 20;
                 string rowAssemble = string.Empty;
-                string rowTempate = $@"
-                <tr>
-                    <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>一</td>
-                    <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em;'>變頻多赛上吹式室外主機保養</td>
-                    <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>台</td>
-                    <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>16</td>
-                    <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>3,000</td>
-                    <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>48,000</td>
-                    <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; word-break: break-all;'>testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest</td>
-                </tr>";
+        
 
                 for (int i = 1; i <= rows; i++)
                 {
@@ -446,9 +429,9 @@ namespace ChengDaApi.Controllers
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{i}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em;'>{tmp.product}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{tmp.pattern}</td>
-                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{(tmp.quantity <= 0 ? "" : tmp.quantity.ToString("#,0"))}</td>
-                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>{(tmp.unit_price <= 0 ? "" : tmp.unit_price.ToString("#,0"))}</td>
-                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>{(tmp.amount <= 0 ? "" : tmp.amount.ToString("#,0"))}</td>
+                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{(tmp.quantity == 0 ? "" : tmp.quantity.ToString("#,0"))}</td>
+                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>{(tmp.unit_price == 0 ? "" : tmp.unit_price.ToString("#,0"))}</td>
+                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>{(tmp.amount == 0 ? "" : tmp.amount.ToString("#,0"))}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; word-break: break-all;'>{tmp.remark}</td>
                         </tr>";
                         totalAmount += tmp.amount;
@@ -473,7 +456,7 @@ namespace ChengDaApi.Controllers
                 #endregion
 
 
-                int afterTaxTotal = req.fax_type == "1" ? (totalAmount + taxAmount) : (totalAmount - taxAmount);
+                int afterTaxTotal = req.fax_type == "1" ? (totalAmount + taxAmount) : totalAmount;
                 string template = $@"
 <body style='box-sizing: border-box; font-family:微軟正黑體; margin: 0; font-size: 12px; padding: 0 45px;'>
     <section style='box-sizing: border-box; width: 100%; padding: 20px 20px;'>
@@ -608,7 +591,7 @@ namespace ChengDaApi.Controllers
                 </p>
                 <p style='margin: 0;'>
                     <span style='width: 4em; display: inline-block; text-align-last: justify;'>公司電話</span>：
-                    <span>(02)2689-9351 / (02)2676-3799/span>
+                    <span>(02)2689-9351 / (02)2676-3799</span>
                 </p>
                 <p style='margin: 0;'>
                     <span style='width: 4em; display: inline-block; text-align-last: justify;'>公司傳真</span>：
@@ -707,6 +690,29 @@ namespace ChengDaApi.Controllers
             }
 
             return res;
+        }
+
+        [HttpGet]
+        [Route("TransformCSV")]
+        public String TransformCSV([FromForm] TransformCSVReq req)
+        {
+            List<string> totalList = new List<string>();
+            using (var reader = new StreamReader(req.file.OpenReadStream(), Encoding.Default, true))
+            {
+                while (!reader.EndOfStream)
+                {
+                    var line = reader.ReadLine();
+                    List<string> values = line.Split(',').ToList();
+                    values = values.Where(x => !string.IsNullOrEmpty(x)).ToList();
+                    foreach (var item in values)
+                    {
+                        totalList.Add($"INSERT INTO [dbo].[system_parameter] VALUES ('Quota','{item}')");
+                    }
+                }
+            }
+            
+            return string.Join(System.Environment.NewLine,totalList);
+
         }
     }
 }

@@ -19,4 +19,9 @@ namespace Domain.Models.Quote
         public List<QuoteModel> items { get; set; }
     }
 
+    public class GetParametersRes: GenericRes
+    {
+        public List<string> datas { get; set; }
+    }
+
 }
