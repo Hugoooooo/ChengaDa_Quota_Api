@@ -14,15 +14,24 @@ namespace ChengDaApi.DBRepositories
         {
             modelBuilder.Entity<Quote>()
                 .HasKey(item => new { item.id });
+            modelBuilder.Entity<DayoffDetail>()
+                .HasKey(item => new { item.id });
             modelBuilder.Entity<QuoteDetail>()
                 .HasKey(item => new { item.id });
             modelBuilder.Entity<SystemParameter>()
                 .HasKey(item => new { item.id });
+            modelBuilder.Entity<Member>()
+                .HasKey(item => new { item.id });
+            modelBuilder.Entity<PunchDetail>()
+                .HasKey(item => new { item.id });
         }
 
         public virtual DbSet<Quote> Quote { set; get; }
+        public virtual DbSet<DayoffDetail> DayoffDetail { set; get; }
         public virtual DbSet<QuoteDetail> QuoteDetail { set; get; }
         public virtual DbSet<SystemParameter> SystemParameter { set; get; }
+        public virtual DbSet<Member> Member { set; get; }
+        public virtual DbSet<PunchDetail> PunchDetail { set; get; }
 
 
 

@@ -17,6 +17,9 @@ namespace ChengDaApi
             services.AddScoped<IDatabase, CoreSrvDb>();
             services.AddScoped<IDapperr, Dapperr>();
             services.AddScoped<IQuoteRepository, QuoteRepository>();
+            services.AddScoped<IMemberRepository, MemberRepository>();
+            services.AddScoped<IPunchDetailRepository, PunchDetailRepository>();
+            services.AddScoped<IDayoffDetailRepository, DayoffDetailRepository>();
             services.AddScoped<IQuoteDetailRepository, QuoteDetailRepository>();
             services.AddScoped<ISystemParameterRepository, SystemParameterRepository>();
             services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));

@@ -54,7 +54,7 @@ namespace ChengDaApi
             //向DI容器註冊Host服務
             services.AddSingleton<QuartzHostedService>();
             //services.AddHostedService(provider => provider.GetService<QuartzHostedService>());
-
+            services.AddAutoMapper(typeof(MappingProfile));
             services.AddControllers();
         }
 
