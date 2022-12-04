@@ -108,10 +108,10 @@ namespace ChengDaApi.Controllers
                 {
                     memberId = req.memberId,
                     category = req.type,
-                    dayoff_date = req.offDate,
-                    start_date = req.startDate,
-                    end_date = req.endDate,
-                    used_minute = req.isAllDay? 480 :(int)(req.endDate - req.startDate).TotalMinutes
+                    dayoff_date = DateTime.Parse(req.offDate),
+                    start_date = DateTime.Parse(req.startDate),
+                    end_date = DateTime.Parse(req.endDate),
+                    used_minute = req.isAllDay? 480 :(int)(DateTime.Parse(req.endDate) - DateTime.Parse(req.startDate)).TotalMinutes
                 });
                 await _database.SaveChangedAsync();
             }
@@ -128,7 +128,7 @@ namespace ChengDaApi.Controllers
 
         [HttpGet]
         [Route("GetDayoffList")]
-        public async Task<GetDayoffListRes> GetDayoffList()
+        public async Task<GetDayoffListRes> GetDayoffList(int memberId, int year, int month)
         {
             GetDayoffListRes res = new GetDayoffListRes()
             {
@@ -138,7 +138,26 @@ namespace ChengDaApi.Controllers
             try
             {
                 var members = await _memberRepository.GetAll();
-                var dayoffList = await _dayoffDetailRepository.GetAll();
+                int lastDay = 0;
+                DateTime startDate;
+                DateTime endDate;
+                if (month == -1)
+                {
+                    lastDay = DateTime.DaysInMonth(year, 12);
+                    startDate = new DateTime(year, 1, 1);
+                    endDate = new DateTime(year, 12, lastDay);
+                }
+                else
+                {
+                    lastDay = DateTime.DaysInMonth(year, month);
+                    startDate = new DateTime(year, month, 1);
+                    endDate = new DateTime(year, month, lastDay);
+                }
+                var dayoffList = await _dayoffDetailRepository.GetDetailByMonth(startDate, endDate);
+                if (memberId > 0)
+                {
+                    dayoffList = dayoffList.Where(p => p.memberId == memberId).ToList();
+                }
                 foreach (var item in dayoffList)
                 {
                     res.items.Add(new DayoffListModel()
@@ -250,11 +269,11 @@ namespace ChengDaApi.Controllers
                             isDelay = true;
                         }
 
-                        if (offWork > overLimit)
+                        if (offWork >= overLimit)
                         {
                             // 加班
                             regularMins = (int)(endLimit - onWork).TotalMinutes;
-                            if (offWork > over66Limit)
+                            if (offWork >= over66Limit)
                             {
                                 over66Mins = (int)(offWork - over66Limit).TotalMinutes;
                                 over33Mins = (int)(over66Limit - endLimit).TotalMinutes;
@@ -265,7 +284,7 @@ namespace ChengDaApi.Controllers
                                 over33Mins = (int)(offWork - endLimit).TotalMinutes;
                             }
                         }
-                        else if (offWork > endLimit)
+                        else if (offWork >= endLimit)
                         {
                             // 超過下班時間但未達加班時間
                             regularMins = (int)(endLimit - onWork).TotalMinutes;

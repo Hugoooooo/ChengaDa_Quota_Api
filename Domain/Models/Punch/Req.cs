@@ -17,9 +17,9 @@ namespace Domain.Models.Quote
         public int memberId { get; set; }
         public string type { get; set; }
         public bool isAllDay { get; set; }
-        public DateTime offDate { get; set; }
-        public DateTime startDate { get; set; }
-        public DateTime endDate { get; set; }
+        public string offDate { get; set; }
+        public string startDate { get; set; }
+        public string endDate { get; set; }
 
     }
 

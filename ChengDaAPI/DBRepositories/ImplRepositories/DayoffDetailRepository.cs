@@ -30,6 +30,13 @@ namespace ChengDaApi.DBRepositories.ImplRepositories
                           select item).ToListAsync();
         }
 
+        public async Task<List<DayoffDetail>> GetDetailByMonth(DateTime startDate, DateTime endDate)
+        {
+            return await (from item in _coreDbContext.DayoffDetail.AsNoTracking()
+                          where item.start_date >= startDate && item.end_date <= endDate
+                          select item).ToListAsync();
+        }
+
         public async Task<DayoffDetail> GetById(int id)
         {
             return await (from item in _coreDbContext.DayoffDetail.AsNoTracking()
