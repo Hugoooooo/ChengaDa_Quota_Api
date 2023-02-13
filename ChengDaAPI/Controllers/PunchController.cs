@@ -104,6 +104,17 @@ namespace ChengDaApi.Controllers
 
             try
             {
+                var member = await _memberRepository.GetById(req.memberId);
+                var totalAnnual = member.annual_hours * 60;
+                var usedAnnual = await calcUsedAnnual(req.memberId, member.onboard_date);
+                var remainAnnual = totalAnnual - usedAnnual;
+                var used_minute = req.isAllDay ? 480 : (int)(DateTime.Parse(req.endDate) - DateTime.Parse(req.startDate)).TotalMinutes;
+                if (remainAnnual - used_minute < 0)
+                {
+                    res.isError = true;
+                    res.message = "特休時數不夠用!";
+                    return res;
+                }
                 await _dayoffDetailRepository.Insert(new DayoffDetail()
                 {
                     memberId = req.memberId,
@@ -111,7 +122,7 @@ namespace ChengDaApi.Controllers
                     dayoff_date = DateTime.Parse(req.offDate),
                     start_date = DateTime.Parse(req.startDate),
                     end_date = DateTime.Parse(req.endDate),
-                    used_minute = req.isAllDay? 480 :(int)(DateTime.Parse(req.endDate) - DateTime.Parse(req.startDate)).TotalMinutes
+                    used_minute = used_minute
                 });
                 await _database.SaveChangedAsync();
             }
@@ -248,6 +259,7 @@ namespace ChengDaApi.Controllers
                     DateTime over66Limit = new DateTime(2022, 1, 1, 19, 0, 0);     // 19:00
                     DateTime onWork = new DateTime(2022, 1, 1, int.Parse(item.onWork.Substring(0, 2)), int.Parse(item.onWork.Substring(2)), 0);
                     DateTime offWork = new DateTime(2022, 1, 1, int.Parse(item.offWork.Substring(0, 2)), int.Parse(item.offWork.Substring(2)), 0);
+                    item.isHoliday = item.isHoliday && !item.isFillDay;
                     if (item.isHoliday)
                     {
                         #region 假日
@@ -272,7 +284,7 @@ namespace ChengDaApi.Controllers
                         if (offWork >= overLimit)
                         {
                             // 加班
-                            regularMins = (int)(endLimit - onWork).TotalMinutes;
+                            regularMins = (int)(endLimit - onWork).TotalMinutes - 60;
                             if (offWork >= over66Limit)
                             {
                                 over66Mins = (int)(offWork - over66Limit).TotalMinutes;
@@ -287,11 +299,11 @@ namespace ChengDaApi.Controllers
                         else if (offWork >= endLimit)
                         {
                             // 超過下班時間但未達加班時間
-                            regularMins = (int)(endLimit - onWork).TotalMinutes;
+                            regularMins = (int)(endLimit - onWork).TotalMinutes - 60;
                         }
                         else
                         {
-                            regularMins = (int)(offWork - onWork).TotalMinutes;
+                            regularMins = (int)(offWork - onWork).TotalMinutes - 60;
                         }
                         #endregion
                     }
@@ -330,7 +342,7 @@ namespace ChengDaApi.Controllers
 
         [HttpGet]
         [Route("GetPunchList")]
-        public async Task<GetPunchListRes> GetPunchList(int memberId, int year,int month)
+        public async Task<GetPunchListRes> GetPunchList(int memberId, int year, int month)
         {
             GetPunchListRes res = new GetPunchListRes()
             {
@@ -344,7 +356,7 @@ namespace ChengDaApi.Controllers
                 DateTime startDate = new DateTime(year, month, 1);
                 DateTime endDate = new DateTime(year, month, lastDay);
                 var punchList = await _punchDetailRepository.GetMonthDetailByMonth(startDate, endDate);
-                if(memberId > 0)
+                if (memberId > 0)
                 {
                     punchList = punchList.Where(p => p.member_id == memberId).ToList();
                 }
@@ -386,13 +398,15 @@ namespace ChengDaApi.Controllers
 
             try
             {
+                var now = DateTime.Now;
                 var member = await _memberRepository.GetById(req.memberId);
+                var startAnnualDate = new DateTime(now.Year, member.onboard_date.Month, member.onboard_date.Day) > now ? new DateTime(now.Year, member.onboard_date.Month, member.onboard_date.Day) : new DateTime(now.Year - 1, member.onboard_date.Month, member.onboard_date.Day);
                 int lastDay = DateTime.DaysInMonth(req.year, req.month);
                 DateTime startDate = new DateTime(req.year, req.month, 1);
                 DateTime endDate = new DateTime(req.year, req.month, lastDay);
                 var punchDatas = await _punchDetailRepository.GetMonthDetailByMemberId(req.memberId, startDate, endDate);
                 var dayoffDatas = await _dayoffDetailRepository.GetDetailByMemberId(req.memberId, startDate, endDate);
-                var annualDayoffDatas = await _dayoffDetailRepository.GetDetailByMemberId(req.memberId, member.onboard_date, member.onboard_date.AddYears(1));
+                var usedAnnual = await calcUsedAnnual(req.memberId, member.onboard_date);
                 // 800 -1700 基本9HR
                 // 判斷遲到3次扣全勤
                 // 10HR 以上算加班  10-12 => 1.33  12以上 => 1.66 + 100餐費
@@ -424,8 +438,8 @@ namespace ChengDaApi.Controllers
                 res.annualDayoffMins = dayoffDatas.Where(p => p.category == DayoffDetail.TYPE_ANNUAL).Sum(p => p.used_minute);
                 res.sickDayoffMins = dayoffDatas.Where(p => p.category == DayoffDetail.TYPE_SICK).Sum(p => p.used_minute);
                 res.personalDayoffMins = dayoffDatas.Where(p => p.category == DayoffDetail.TYPE_PERSONAL).Sum(p => p.used_minute);
-                res.annualHours = member.annual_hours;
-                res.usedAnnualMins = annualDayoffDatas.Where(p => p.category == DayoffDetail.TYPE_ANNUAL).Sum(p => p.used_minute);
+                res.annualHours = member.annual_hours * 60;
+                res.usedAnnualMins = usedAnnual;
                 // 底薪 + 獎金 + 全勤 + 加班費 + 加班獎金 - 勞健保 - 病假 - 事假
                 int personalPrice = (int)Math.Round(res.personalDayoffMins * minSalary);
                 int sickPrice = (int)Math.Round(res.sickDayoffMins * minSalary / 2);
@@ -443,5 +457,15 @@ namespace ChengDaApi.Controllers
             return res;
         }
 
+        private async Task<int> calcUsedAnnual(int memberId, DateTime onboardDate)
+        {
+            var now = DateTime.Now;
+            int startYear = new DateTime(now.Year, onboardDate.Month, onboardDate.Day) < now ? now.Year : now.Year - 1;
+            var startAnnualDate = new DateTime(startYear, onboardDate.Month, onboardDate.Day);
+            var endAnnualDate = new DateTime(startYear + 1, onboardDate.Month, onboardDate.Day);
+            var details = await _dayoffDetailRepository.GetDetailByMemberId(memberId, startAnnualDate, endAnnualDate);
+            details = details.Where(p => p.category == DayoffDetail.TYPE_ANNUAL).ToList();
+            return details.Sum(p => p.used_minute);
+        }
     }
 }

@@ -43,6 +43,7 @@ namespace Domain.Models.Quote
         public string onWork { get; set; }
         public string offWork { get; set; }
         public bool isHoliday { get; set; }
+        public bool isFillDay { get; set; }
     }
 
     public class CalcSalaryReq

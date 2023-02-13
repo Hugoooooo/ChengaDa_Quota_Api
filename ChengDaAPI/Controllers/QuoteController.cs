@@ -191,8 +191,6 @@ namespace ChengDaApi.Controllers
         </div>
         <div style='box-sizing: border-box;'>
             <div style='box-sizing: border-box; display: inline-block; line-height: 1.5;'>
-                <p style='margin: 0;'>冷氣各機種</p>
-                <p style='margin: 0;'>移機/裝機/保養/維修</p>
             </div>
             <div style='box-sizing: border-box; display: inline-block; float: right; line-height: 1.5;'>
                 <p style='margin: 0;'>
@@ -256,11 +254,11 @@ namespace ChengDaApi.Controllers
             <thead>
                 <tr>
                     <th style='padding: 0 0.5em; border: 1px solid; width: 3em;'>項目</th>
-                    <th style='padding: 0 0.5em; border: 1px solid;'>品名/規格</th>
-                    <th style='padding: 0 0.5em; border: 1px solid;'>單位</th>
+                    <th style='padding: 0 0.5em; border: 1px solid;'>品項</th>
+                    <th style='padding: 0 0.5em; border: 1px solid;'>規格</th>
                     <th style='padding: 0 0.5em; border: 1px solid;'>數量</th>
                     <th style='padding: 0 0.5em; border: 1px solid;'>單價</th>
-                    <th style='padding: 0 0.5em; border: 1px solid;'>複價</th>
+                    <th style='padding: 0 0.5em; border: 1px solid;'>金額</th>
                     <th style='padding: 0 0.5em; border: 1px solid; width: 20%;'>備註</th>
                 </tr>
             </thead>
@@ -515,8 +513,6 @@ namespace ChengDaApi.Controllers
         </div>
         <div style='box-sizing: border-box;'>
             <div style='box-sizing: border-box; display: inline-block; line-height: 1.5;'>
-                <p style='margin: 0;'>冷氣各機種</p>
-                <p style='margin: 0;'>移機/裝機/保養/維修</p>
             </div>
             <div style='box-sizing: border-box; display: inline-block; float: right; line-height: 1.5;'>
                 <p style='margin: 0;'>
@@ -580,11 +576,11 @@ namespace ChengDaApi.Controllers
             <thead>
                 <tr>
                     <th style='padding: 0 0.5em; border: 1px solid; width: 3em;'>項目</th>
-                    <th style='padding: 0 0.5em; border: 1px solid;'>品名/規格</th>
-                    <th style='padding: 0 0.5em; border: 1px solid;'>單位</th>
+                    <th style='padding: 0 0.5em; border: 1px solid;'>品項</th>
+                    <th style='padding: 0 0.5em; border: 1px solid;'>規格</th>
                     <th style='padding: 0 0.5em; border: 1px solid;'>數量</th>
                     <th style='padding: 0 0.5em; border: 1px solid;'>單價</th>
-                    <th style='padding: 0 0.5em; border: 1px solid;'>複價</th>
+                    <th style='padding: 0 0.5em; border: 1px solid;'>金額</th>
                     <th style='padding: 0 0.5em; border: 1px solid; width: 20%;'>備註</th>
                 </tr>
             </thead>
