@@ -111,7 +111,7 @@ namespace ChengDaApi.Controllers
                 #region 項目
                 int totalAmount = 0; //總價
                 int taxAmount = 0;  //稅額
-                int rows = 20;
+                int rows = 30;
                 string rowAssemble = string.Empty;
 
                 for (int i = 1; i <= rows; i++)
@@ -184,7 +184,7 @@ namespace ChengDaApi.Controllers
                 }
 
                 string template = $@"
-<body style='box-sizing: border-box; font-family:微軟正黑體; margin: 0; font-size: 12px; padding: 0 45px;'>
+<body style='box-sizing: border-box; font-family:標楷體; margin: 0; font-size: 12px; padding: 0 45px;'>
     <section style='box-sizing: border-box; width: 100%; padding: 20px 20px;'>
         <div style='box-sizing: border-box; text-align: center; font-size: 30px;'>
             <p style='margin: 0.5em 0;'>政達冷氣有限公司</p>
@@ -225,7 +225,7 @@ namespace ChengDaApi.Controllers
                     <span>{req.companyTax}</span>
                 </p>
                 <p style='margin: 0;'>
-                    <span style='width: 4em; display: inline-block; text-align-last: justify;'>傳&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;真</span>：
+                    <span style='width: 4em; display: inline-block; text-align-last: justify;'>傳&nbsp;&nbsp;&nbsp;&nbsp;真</span>：
                     <span>{req.fax}</span>
                 </p>
             </div>
@@ -235,11 +235,11 @@ namespace ChengDaApi.Controllers
                     <span>{DateTime.Now.ToString("yyyy/MM/dd")}</span>
                 </p>
                 <p style='margin: 0;'>
-                    <span style='width: 4em; display: inline-block; text-align-last: justify;'>連&nbsp;&nbsp;絡&nbsp;&nbsp;人</span>：
+                    <span style='width: 4em; display: inline-block; text-align-last: justify;'>連&nbsp;絡&nbsp;人</span>：
                     <span>{req.contact_name}</span>
                 </p>
                 <p style='margin: 0;'>
-                    <span style='width: 4em; display: inline-block; text-align-last: justify;'>電&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;話</span>：
+                    <span style='width: 4em; display: inline-block; text-align-last: justify;'>電&nbsp;&nbsp;&nbsp;&nbsp;話</span>：
                     <span>{req.phone}</span>
                 </p>
                 <p style='margin: 0;'>
@@ -250,7 +250,7 @@ namespace ChengDaApi.Controllers
         </div>
     </section>
     <section style='box-sizing: border-box; width: 100%; padding: 0px 20px 20px;'>
-        <table style='box-sizing: border-box; width: 100%; border-collapse: collapse; font-size: 12px;'>
+        <table style='box-sizing: border-box; width: 100%; border-collapse: collapse; font-size: 10px;'>
             <thead>
                 <tr>
                     <th style='padding: 0 0.5em; border: 1px solid; width: 3em;'>項目</th>
@@ -432,7 +432,7 @@ namespace ChengDaApi.Controllers
                 #region 項目
                 int totalAmount = 0; //總價
                 int taxAmount = 0;  //稅額
-                int rows = 20;
+                int rows = 30;
                 string rowAssemble = string.Empty;
         
 
@@ -506,7 +506,7 @@ namespace ChengDaApi.Controllers
                 }
 
                 string template = $@"
-<body style='box-sizing: border-box; font-family:微軟正黑體; margin: 0; font-size: 12px; padding: 0 45px;'>
+<body style='box-sizing: border-box; font-family:標楷體; margin: 0; font-size: 12px; padding: 0 45px;'>
     <section style='box-sizing: border-box; width: 100%; padding: 20px 20px;'>
         <div style='box-sizing: border-box; text-align: center; font-size: 30px;'>
             <p style='margin: 0.5em 0;'>政達冷氣有限公司</p>
@@ -547,7 +547,7 @@ namespace ChengDaApi.Controllers
                     <span>{req.companyTax}</span>
                 </p>
                 <p style='margin: 0;'>
-                    <span style='width: 4em; display: inline-block; text-align-last: justify;'>傳&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;真</span>：
+                    <span style='width: 4em; display: inline-block; text-align-last: justify;'>傳&nbsp;&nbsp;&nbsp;&nbsp;真</span>：
                     <span>{req.fax}</span>
                 </p>
             </div>
@@ -557,11 +557,11 @@ namespace ChengDaApi.Controllers
                     <span>{DateTime.Now.ToString("yyyy/MM/dd")}</span>
                 </p>
                 <p style='margin: 0;'>
-                    <span style='width: 4em; display: inline-block; text-align-last: justify;'>連&nbsp;&nbsp;絡&nbsp;&nbsp;人</span>：
+                    <span style='width: 4em; display: inline-block; text-align-last: justify;'>連&nbsp;絡&nbsp;人</span>：
                     <span>{req.contact_name}</span>
                 </p>
                 <p style='margin: 0;'>
-                    <span style='width: 4em; display: inline-block; text-align-last: justify;'>電&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;話</span>：
+                    <span style='width: 4em; display: inline-block; text-align-last: justify;'>電&nbsp;&nbsp;&nbsp;&nbsp;話</span>：
                     <span>{req.phone}</span>
                 </p>
                 <p style='margin: 0;'>
@@ -572,7 +572,7 @@ namespace ChengDaApi.Controllers
         </div>
     </section>
     <section style='box-sizing: border-box; width: 100%; padding: 0px 20px 20px;'>
-        <table style='box-sizing: border-box; width: 100%; border-collapse: collapse; font-size: 12px;'>
+        <table style='box-sizing: border-box; width: 100%; border-collapse: collapse; font-size: 10px;'>
             <thead>
                 <tr>
                     <th style='padding: 0 0.5em; border: 1px solid; width: 3em;'>項目</th>
