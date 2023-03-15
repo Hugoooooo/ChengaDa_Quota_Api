@@ -204,7 +204,7 @@ namespace ChengDaApi.Controllers
             </div>
         </div>
         <div style='box-sizing: border-box; text-align: center; font-size: 25px;'>
-            <p style='margin: 0.5em 0;'>估&nbsp;&nbsp;價&nbsp;&nbsp;單</p>
+            <p style='margin: 0.5em 0;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;估&nbsp;&nbsp;價&nbsp;&nbsp;單</p>
         </div>
         <div style='box-sizing: border-box;'>
             <div style='box-sizing: border-box; display: inline-block; line-height: 1.5;'>
@@ -526,7 +526,7 @@ namespace ChengDaApi.Controllers
             </div>
         </div>
         <div style='box-sizing: border-box; text-align: center; font-size: 25px;'>
-            <p style='margin: 0.5em 0;'>估&nbsp;&nbsp;價&nbsp;&nbsp;單</p>
+            <p style='margin: 0.5em 0;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;估&nbsp;&nbsp;價&nbsp;&nbsp;單</p>
         </div>
         <div style='box-sizing: border-box;'>
             <div style='box-sizing: border-box; display: inline-block; line-height: 1.5;'>
