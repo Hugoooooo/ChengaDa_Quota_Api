@@ -84,7 +84,8 @@ namespace ChengDaApi.Controllers
                             unit_price = p.unit_price,
                             amount = p.amount,
                             remark = p.remark,
-                            idx = p.idx
+                            idx = p.idx,
+                            unit = p.unit
                         };
                     }).ToList();
                 }
@@ -124,7 +125,7 @@ namespace ChengDaApi.Controllers
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{i}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em;'>{tmp.product}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{tmp.pattern}</td>
-                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{(tmp.quantity == 0 ? "" : tmp.quantity.ToString("#,0"))}</td>
+                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{(tmp.quantity == 0 ? "" : tmp.quantity.ToString("#,0"))}{tmp.unit}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>{(tmp.unit_price == 0 ? "" : tmp.unit_price.ToString("#,0"))}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>{(tmp.amount == 0 ? "" : tmp.amount.ToString("#,0"))}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; word-break: break-all;'>{tmp.remark}</td>
@@ -416,7 +417,8 @@ namespace ChengDaApi.Controllers
                                 unit_price = item.unit_price,
                                 amount = item.amount,
                                 remark = item.remark,
-                                idx = item.idx
+                                idx = item.idx,
+                                unit = item.unit
                             });
                         }
                         await _database.SaveChangedAsync();
@@ -446,7 +448,7 @@ namespace ChengDaApi.Controllers
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{i}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em;'>{tmp.product}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{tmp.pattern}</td>
-                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{(tmp.quantity == 0 ? "" : tmp.quantity.ToString("#,0"))}</td>
+                            <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: center;'>{(tmp.quantity == 0 ? "" : tmp.quantity.ToString("#,0"))}{tmp.unit}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>{(tmp.unit_price == 0 ? "" : tmp.unit_price.ToString("#,0"))}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; text-align: right;'>{(tmp.amount == 0 ? "" : tmp.amount.ToString("#,0"))}</td>
                             <td style='padding: 0 0.5em; border: 1px solid; height: 1.5em; word-break: break-all;'>{tmp.remark}</td>

@@ -19,6 +19,7 @@ namespace Domain.Models
         public int amount { get; set; }
         public string remark { get; set; }
         public int idx { get; set; }
+        public string unit { get; set; }
     }
 
 }
