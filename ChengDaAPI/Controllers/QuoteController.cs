@@ -112,7 +112,7 @@ namespace ChengDaApi.Controllers
                 #region 項目
                 int totalAmount = 0; //總價
                 int taxAmount = 0;  //稅額
-                int rows = 30;
+                int rows = req.row;
                 string rowAssemble = string.Empty;
 
                 for (int i = 1; i <= rows; i++)
@@ -251,7 +251,7 @@ namespace ChengDaApi.Controllers
         </div>
     </section>
     <section style='box-sizing: border-box; width: 100%; padding: 0px 20px 20px;'>
-        <table style='box-sizing: border-box; width: 100%; border-collapse: collapse; font-size: 10px;'>
+        <table style='box-sizing: border-box; width: 100%; border-collapse: collapse; font-size: {req.row_size}px;'>
             <thead>
                 <tr>
                     <th style='padding: 0 0.5em; border: 1px solid; width: 3em;'>項目</th>
@@ -266,7 +266,7 @@ namespace ChengDaApi.Controllers
             <tbody>
                 {rowAssemble}
             </tbody>
-            <tfoot>
+            <tfoot style='font-size: 12px;'>
                 <tr>
                     <td colspan='7' style='padding: 0.5em 15%; border: 1px solid; text-align: right;'>
                         {totalTemplate}
@@ -434,7 +434,7 @@ namespace ChengDaApi.Controllers
                 #region 項目
                 int totalAmount = 0; //總價
                 int taxAmount = 0;  //稅額
-                int rows = 30;
+                int rows = req.row;
                 string rowAssemble = string.Empty;
         
 
@@ -574,7 +574,7 @@ namespace ChengDaApi.Controllers
         </div>
     </section>
     <section style='box-sizing: border-box; width: 100%; padding: 0px 20px 20px;'>
-        <table style='box-sizing: border-box; width: 100%; border-collapse: collapse; font-size: 10px;'>
+        <table style='box-sizing: border-box; width: 100%; border-collapse: collapse; font-size: {req.row_size}px;'>
             <thead>
                 <tr>
                     <th style='padding: 0 0.5em; border: 1px solid; width: 3em;'>項目</th>
@@ -589,7 +589,7 @@ namespace ChengDaApi.Controllers
             <tbody>
                 {rowAssemble}
             </tbody>
-            <tfoot>
+            <tfoot style='font-size: 12px;'>
                 <tr>
                     <td colspan='7' style='padding: 0.5em 15%; border: 1px solid; text-align: right;'>
                        {totalTemplate}

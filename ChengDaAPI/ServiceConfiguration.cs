@@ -1,5 +1,6 @@
 ﻿using ChengDaApi.DBRepositories.ImplRepositories;
 using ChengDaApi.DBRepositories.IRepositories;
+using ChengDaApi.Services;
 using DinkToPdf;
 using DinkToPdf.Contracts;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +23,14 @@ namespace ChengDaApi
             services.AddScoped<IDayoffDetailRepository, DayoffDetailRepository>();
             services.AddScoped<IQuoteDetailRepository, QuoteDetailRepository>();
             services.AddScoped<ISystemParameterRepository, SystemParameterRepository>();
+            services.AddScoped<IAccountRepository, AccountRepository>();
+            services.AddScoped<IInventoryRepository, InventoryRepository>();
+            services.AddScoped<IPurchaseDetailRepository, PurchaseDetailRepository>();
+            services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
+            services.AddScoped<IShipOrderRepository, ShipOrderRepository>();
+            services.AddScoped<IShipDetailRepository, ShipDetailRepository>();
             services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+            services.AddScoped<JwtTokenService>();
             return services;
         }
     }

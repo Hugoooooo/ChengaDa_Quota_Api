@@ -32,9 +32,12 @@ namespace ChengDaApi.DBRepositories
         public virtual DbSet<SystemParameter> SystemParameter { set; get; }
         public virtual DbSet<Member> Member { set; get; }
         public virtual DbSet<PunchDetail> PunchDetail { set; get; }
-
-
-
+        public virtual DbSet<Account> Account { set; get; }
+        public virtual DbSet<PurchaseOrder> PurchaseOrder { set; get; }
+        public virtual DbSet<PurchaseDetail> PurchaseDetail { set; get; }
+        public virtual DbSet<ShipOrder> ShipOrder { set; get; }
+        public virtual DbSet<ShipDetail> ShipDetail { set; get; }
+        public virtual DbSet<Inventory> Inventory { set; get; }
 
     }
 }

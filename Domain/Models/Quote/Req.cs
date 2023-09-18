@@ -17,6 +17,8 @@ namespace Domain.Models.Quote
         public string fax { get; set; }
         public string create_user { get; set; }
         public string fax_type { get; set; }    // 1: 內含 2: 外加
+        public int row { get; set; }
+        public int row_size { get; set; }
         public List<QuoteModel> items { get; set; }
     }
 

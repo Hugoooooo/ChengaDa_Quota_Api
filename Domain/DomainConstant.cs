@@ -17,6 +17,9 @@ namespace Domain
         public const string ITEM_DISABLED = "此資料已停用";
         public const string IMAGE_SIZE_ERROR = "圖片尺寸錯誤";
 
+
+        public const string LOGIN_FAIL = "登入失敗"; //exception 篩選條件
+        public const string LOGIN_SUCCESS = "登入成功";
         //POST
         public const string INSERT_FAIL = "新增失敗"; //exception 篩選條件
         public const string INSERT_SUCCESS = "新增成功";
