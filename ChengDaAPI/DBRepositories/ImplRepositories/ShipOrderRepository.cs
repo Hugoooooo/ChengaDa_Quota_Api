@@ -44,6 +44,12 @@ namespace ChengDaApi.DBRepositories.ImplRepositories
             #region Sql Condition
             string condition = @" WHERE 1=1 ";
             DynamicParameters dynamicParams = new DynamicParameters();
+            if (!string.IsNullOrWhiteSpace(req.customer))
+            {
+                condition += $" AND customer like @customer";
+                dynamicParams.Add("@customer", req.customer);
+            }
+
             if (!string.IsNullOrWhiteSpace(req.id))
             {
                 condition += $" AND id like @id";

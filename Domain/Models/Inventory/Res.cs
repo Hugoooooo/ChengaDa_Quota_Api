@@ -107,5 +107,16 @@ namespace Domain.Models.Inventory
         public int price { get; set; }
     }
 
+    public class ImportInventoryRes : GenericRes
+    {
+        public List<InventoryImportItem> items { get; set; } = new List<InventoryImportItem>();
+    }
 
+    public class InventoryImportItem
+    {
+        public string pattern { get; set; }
+        public string machineId { get; set; }
+        public string brand { get; set; }
+        public int price { get; set; }
+    }
 }

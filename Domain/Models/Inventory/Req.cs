@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 
 namespace Domain.Models.Inventory
@@ -9,6 +10,11 @@ namespace Domain.Models.Inventory
         public string note { get; set; }
         public string purchaseDate { get; set; }
         public List<AddPurchaseDetail> items { get; set; } = new List<AddPurchaseDetail>();
+    }
+
+    public class GenericFileReq
+    {
+        public IFormFile File { get; set; }
     }
 
     public class AddPurchaseDetail

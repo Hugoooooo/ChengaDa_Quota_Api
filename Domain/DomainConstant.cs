@@ -52,6 +52,9 @@ namespace Domain
         public const string EXPORT_FAIL = "匯出失敗";//exception 篩選條件
         public const string EXPORT_SUCCESS = "匯出成功";
 
+        public const string IMPORT_FAIL = "匯入失敗";//exception 篩選條件
+        public const string IMPORT_SUCCESS = "匯入成功";
+
         public const string JOB_FAIL = "排程失敗";//exception 篩選條件
         public const string JOB_SUCCESS = "排程成功";
 

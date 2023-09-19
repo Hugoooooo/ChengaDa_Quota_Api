@@ -17,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileSystemGlobbing.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using MiniExcelLibs;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,8 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
+using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace ChengDaApi.Controllers
 {
@@ -677,7 +680,7 @@ namespace ChengDaApi.Controllers
 
         [HttpGet]
         [Route("getShipOrderList")]
-        public async Task<GetShipOrderListRes> GetShipOrderList(string sDate, string eDate, string orderId)
+        public async Task<GetShipOrderListRes> GetShipOrderList(string customer, string sDate, string eDate, string orderId)
         {
             GetShipOrderListRes res = new GetShipOrderListRes()
             {
@@ -701,6 +704,7 @@ namespace ChengDaApi.Controllers
                 #endregion
                 var orders = await _shipOrderRepository.GetList(new Domain.Models.Repository.ShipOrder.GetListReq()
                 {
+                    customer = $"%{customer}%",
                     sDate = sDate,
                     eDate = eDate,
                     id = orderId
@@ -1130,5 +1134,84 @@ namespace ChengDaApi.Controllers
             return res;
         }
         #endregion
+
+        [HttpPost]
+        [Route("importInventory")]
+        public async Task<ImportInventoryRes> ImportInventory([FromForm] GenericFileReq req)
+        {
+            var res = new ImportInventoryRes()
+            {
+                message = GenericResType.IMPORT_SUCCESS
+            };
+            //操作時間
+            var now = DateTime.Now;
+            var company = _config["Company"];
+
+            try
+            {
+                #region 檢核
+                // Token
+                var token = _jwtToken.GetClaim(HttpContext);
+                if (token == null)
+                {
+                    res.isError = true;
+                    res.message = $"{GenericResType.PERMISSION_DENY}";
+                    return res;
+                }
+
+                #endregion
+
+                var errorMessage = string.Empty;
+                var headerStartCell = "A1";
+                var columnStartCell = "A1";
+                using (var ms = new MemoryStream())
+                {
+                    req.File.CopyTo(ms);
+
+
+                    //檢核：匯入檔案欄位名稱
+
+                    var invHeaders = new List<string> { "型號", "機號", "品牌", "單價" };
+                    var importHeaders = MiniExcel.GetColumns(ms, useHeaderRow: true, "庫存", ExcelType.XLSX, headerStartCell);
+                    if (importHeaders != null)
+                    {
+                        var sourceExcepts = invHeaders.Except(importHeaders);
+                        foreach (var exceptsItem in sourceExcepts)
+                        {
+                            errorMessage += $"{(string.IsNullOrWhiteSpace(errorMessage) ? String.Empty : "、")}{exceptsItem}";
+                        }
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(errorMessage))
+                    {
+                        res.isError = true;
+                        res.message = $"{errorMessage}";
+                        return res;
+                    }
+
+                    //匯入檔案欄位讀取轉換，若空白行則中斷讀取
+                    var rows = MiniExcel.Query(ms, useHeaderRow: true, "庫存", ExcelType.XLSX, columnStartCell).TakeWhile(row => row.型號 != null).Cast<IDictionary<string, object>>();
+                    res.items = rows.Select(p =>
+                    {
+                        return new InventoryImportItem()
+                        {
+                            pattern = p["型號"]?.ToString().Trim() ?? string.Empty,
+                            machineId = p["機號"]?.ToString().Trim() ?? string.Empty,
+                            brand = p["品牌"]?.ToString().Trim() ?? string.Empty,
+                            price = p["單價"] == null ? 0 : int.Parse(p["單價"]?.ToString().Trim()),
+                        };
+                    }).ToList();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Exception：{ex}");
+                res.isError = true;
+                res.message = GenericResType.IMPORT_FAIL;
+            }
+
+            return res;
+        }
     }
 }
